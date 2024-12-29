@@ -2,7 +2,7 @@ import logging
 
 from degiro_connector.core.exceptions import DeGiroConnectionError
 import onetimepass as otp
-import cloudscraper
+import cloudscraper, requests
 
 from degiro_connector.core.constants import urls
 from degiro_connector.core.abstracts.abstract_action import AbstractAction
@@ -91,9 +91,9 @@ class ActionConnect(AbstractAction):
                 login_sucess = LoginSuccess.model_validate_json(json_data=response.text)
             else:
                 login_error = LoginError.model_validate_json(json_data=response.text)
-        except cloudscraper.HTTPError as e:
+        except requests.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, cloudscraper.Response):
+            if isinstance(e.response, cloudscraper.requests.Response):
                 logger.fatal(e.response.text)
         except Exception as e:
             logger.fatal(e)
