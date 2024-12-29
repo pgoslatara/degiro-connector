@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 
 from degiro_connector.core.constants import urls
 from degiro_connector.core.abstracts.abstract_action import AbstractAction
@@ -14,7 +14,7 @@ class ActionDeleteOrder(AbstractAction):
         order_id: str,
         session_id: str,
         credentials: Credentials,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> bool | None:
         if logger is None:
@@ -27,7 +27,7 @@ class ActionDeleteOrder(AbstractAction):
         url = f"{url}/{order_id};jsessionid={session_id}"
         params = {"intAccount": int_account, "sessionId": session_id}
 
-        request = requests.Request(method="DELETE", url=url, params=params)
+        request = cloudscraper.requests.Request(method="DELETE", url=url, params=params)
         prepped = session.prepare_request(request)
 
         try:
@@ -35,9 +35,9 @@ class ActionDeleteOrder(AbstractAction):
             response.raise_for_status()
 
             return response.status_code == 200
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

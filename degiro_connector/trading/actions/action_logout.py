@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 
 from degiro_connector.core.constants import urls
 from degiro_connector.trading.models.credentials import Credentials
@@ -14,7 +14,7 @@ class ActionLogout(AbstractAction):
         credentials: Credentials,
         session_id: str,
         logger: logging.Logger | None = None,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
     ) -> bool | None:
         if logger is None:
             logger = cls.build_logger()
@@ -30,7 +30,7 @@ class ActionLogout(AbstractAction):
             "sessionId": session_id,
         }
 
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             method="PUT",
             url=url,
             params=params,
@@ -41,9 +41,9 @@ class ActionLogout(AbstractAction):
         try:
             response_raw = session.send(prepped)
             response_raw.raise_for_status()
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             status_code = getattr(response_raw, "status_code", "No status_code found.")
             text = getattr(response_raw, "text", "No text found.")

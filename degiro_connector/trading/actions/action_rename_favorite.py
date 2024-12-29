@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-import requests
+import cloudscraper
 
 from degiro_connector.core.constants import urls
 from degiro_connector.core.abstracts.abstract_action import AbstractAction
@@ -20,7 +20,7 @@ class ActionRenameFavorite(AbstractAction):
         name: str,
         session_id: str,
         credentials: Credentials,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> Optional[int]:
         """Update a favorite list name.
@@ -36,7 +36,7 @@ class ActionRenameFavorite(AbstractAction):
             raw (bool, optional):
                 Whether are not we want the raw API response.
                 Defaults to False.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -61,7 +61,7 @@ class ActionRenameFavorite(AbstractAction):
 
         favorite_dict = cls.favorite_to_api(name=name)
 
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             method="PUT",
             url=url,
             params=params,
@@ -73,9 +73,9 @@ class ActionRenameFavorite(AbstractAction):
         try:
             response_raw = session.send(prepped)
             response_raw.raise_for_status()
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

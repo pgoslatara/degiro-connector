@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -28,7 +28,7 @@ class ActionGetTopNewsPreview(AbstractAction):
         return params_map
 
     @staticmethod
-    def build_model(response: requests.Response) -> PreviewWrapper:
+    def build_model(response) -> PreviewWrapper:
         model = PreviewWrapper.model_validate_json(json_data=response.text)
 
         return model
@@ -41,7 +41,7 @@ class ActionGetTopNewsPreview(AbstractAction):
         preview_request: PreviewRequest | None = None,
         product_list: list[int] | None = None,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> TopNewsPreview | dict | None:
         if logger is None:
@@ -54,7 +54,7 @@ class ActionGetTopNewsPreview(AbstractAction):
         params_map = cls.build_params_map(preview_request=preview_request)
         params_map.update({"intAccount": int_account, "sessionId": session_id})
 
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             json=product_list,
             method="GET",
             params=params_map,
@@ -72,9 +72,9 @@ class ActionGetTopNewsPreview(AbstractAction):
             else:
                 model = cls.build_model(response=response).data
             return model
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

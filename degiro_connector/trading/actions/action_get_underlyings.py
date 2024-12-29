@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 from orjson import loads
 from pydantic import TypeAdapter
 
@@ -15,7 +15,7 @@ from degiro_connector.trading.models.product_search import (
 
 class ActionGetUnderlyings(AbstractAction):
     @staticmethod
-    def build_model(response: requests.Response) -> list[Underlying]:
+    def build_model(response) -> list[Underlying]:
         model = TypeAdapter(list[Underlying]).validate_json(response.text)
 
         return model
@@ -46,7 +46,7 @@ class ActionGetUnderlyings(AbstractAction):
         credentials: Credentials,
         underlyings_request: UnderlyingsRequest,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> list[Underlying] | dict | None:
         """Retrieve information about the account.
@@ -64,7 +64,7 @@ class ActionGetUnderlyings(AbstractAction):
             raw (bool, optional):
                 Whether are not we want the raw API response.
                 Defaults to False.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -84,7 +84,7 @@ class ActionGetUnderlyings(AbstractAction):
         params_map = cls.build_params_map(underlyings_request=underlyings_request)
         params_map.update({"intAccount": int_account, "sessionId": session_id})
 
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             method="GET",
             params=params_map,
             url=url,
@@ -100,9 +100,9 @@ class ActionGetUnderlyings(AbstractAction):
             else:
                 model = cls.build_model(response=response)
             return model
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

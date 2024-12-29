@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -17,7 +17,7 @@ class ActionGetCompanyProfile(AbstractAction):
         session_id: str,
         credentials: Credentials,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> CompanyProfile | dict | None:
         if logger is None:
@@ -29,7 +29,7 @@ class ActionGetCompanyProfile(AbstractAction):
         url = f"{urls.COMPANY_PROFILE}/{product_isin}"
         params = {"intAccount": int_account, "sessionId": session_id}
 
-        request = requests.Request(method="GET", url=url, params=params)
+        request = cloudscraper.requests.Request(method="GET", url=url, params=params)
         prepped = session.prepare_request(request)
         prepped.headers["cookie"] = "JSESSIONID=" + session_id
 
@@ -45,9 +45,9 @@ class ActionGetCompanyProfile(AbstractAction):
                 )
 
             return response_map
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

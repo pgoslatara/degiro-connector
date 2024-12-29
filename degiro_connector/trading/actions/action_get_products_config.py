@@ -1,7 +1,7 @@
 import logging
 
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -15,7 +15,7 @@ class ActionGetProductsConfig(AbstractAction):
         cls,
         session_id: str,
         credentials: Credentials,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> dict | None:
         """Fetch the product search config table.
@@ -30,7 +30,7 @@ class ActionGetProductsConfig(AbstractAction):
             raw (bool, optional):
                 Whether are not we want the raw API response.
                 Defaults to False.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -49,7 +49,7 @@ class ActionGetProductsConfig(AbstractAction):
         url = urls.PRODUCT_SEARCH_DICTIONARY
         params = {"intAccount": int_account, "sessionId": session_id}
 
-        request = requests.Request(method="GET", url=url, params=params)
+        request = cloudscraper.requests.Request(method="GET", url=url, params=params)
         prepped = session.prepare_request(request)
 
         try:
@@ -58,9 +58,9 @@ class ActionGetProductsConfig(AbstractAction):
 
             model = loads(response.text)
             return model
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

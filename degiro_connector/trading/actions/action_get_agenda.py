@@ -1,7 +1,7 @@
 import logging
 
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -12,7 +12,7 @@ from degiro_connector.trading.models.agenda import Agenda, AgendaRequest
 
 class ActionGetAgenda(AbstractAction):
     @staticmethod
-    def build_model(response: requests.Response) -> Agenda:
+    def build_model(response) -> Agenda:
         model = Agenda.model_validate_json(json_data=response.text)
 
         return model
@@ -34,7 +34,7 @@ class ActionGetAgenda(AbstractAction):
         session_id: str,
         credentials: Credentials,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> Agenda | dict | None:
         if logger is None:
@@ -47,7 +47,7 @@ class ActionGetAgenda(AbstractAction):
         params_map = cls.build_params_map(agenda_request=agenda_request)
         params_map.update({"intAccount": int_account, "sessionId": session_id})
 
-        request = requests.Request(method="GET", url=url, params=params_map)
+        request = cloudscraper.requests.Request(method="GET", url=url, params=params_map)
         prepped = session.prepare_request(request=request)
 
         try:
@@ -59,9 +59,9 @@ class ActionGetAgenda(AbstractAction):
             else:
                 model = cls.build_model(response=response)
             return model
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

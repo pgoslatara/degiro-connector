@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -14,7 +14,7 @@ class ActionGetAccountInfo(AbstractAction):
         cls,
         session_id: str,
         credentials: Credentials,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> dict | None:
         if logger is None:
@@ -25,7 +25,7 @@ class ActionGetAccountInfo(AbstractAction):
         int_account = credentials.int_account
         url = f"{urls.ACCOUNT_INFO}/{int_account};jsessionid={session_id}"
 
-        request = requests.Request(method="GET", url=url)
+        request = cloudscraper.requests.Request(method="GET", url=url)
         prepped = session.prepare_request(request)
 
         try:
@@ -34,9 +34,9 @@ class ActionGetAccountInfo(AbstractAction):
             model = loads(response.text)
 
             return model
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

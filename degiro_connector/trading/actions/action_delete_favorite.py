@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 
 from degiro_connector.core.constants import urls
 from degiro_connector.core.abstracts.abstract_action import AbstractAction
@@ -14,7 +14,7 @@ class ActionDeleteFavorite(AbstractAction):
         list_id: int,
         session_id: str,
         credentials: Credentials,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> bool | None:
         """Delete a favorite list.
@@ -28,7 +28,7 @@ class ActionDeleteFavorite(AbstractAction):
             raw (bool, optional):
                 Whether are not we want the raw API response.
                 Defaults to False.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -47,15 +47,15 @@ class ActionDeleteFavorite(AbstractAction):
         url = f"{urls.FAVOURITES_LIST}/{list_id}"
         params = {"intAccount": int_account, "sessionId": session_id}
 
-        request = requests.Request(method="DELETE", url=url, params=params)
+        request = cloudscraper.requests.Request(method="DELETE", url=url, params=params)
         prepped = session.prepare_request(request)
 
         try:
             response = session.send(prepped)
             response.raise_for_status()
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

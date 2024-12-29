@@ -1,7 +1,7 @@
 import logging
 
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -28,7 +28,7 @@ class ActionGetNewsByCompany(AbstractAction):
         session_id: str,
         credentials: Credentials,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> NewsBatch | dict | None:
         if logger is None:
@@ -41,7 +41,7 @@ class ActionGetNewsByCompany(AbstractAction):
         params_map = cls.build_params_map(news_request=news_request)
         params_map.update({"intAccount": int_account, "sessionId": session_id})
 
-        http_request = requests.Request(method="GET", url=url, params=params_map)
+        http_request = cloudscraper.requests.Request(method="GET", url=url, params=params_map)
         prepped = session.prepare_request(http_request)
         prepped.headers["cookie"] = "JSESSIONID=" + session_id
 

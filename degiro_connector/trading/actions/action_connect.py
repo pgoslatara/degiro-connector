@@ -2,7 +2,7 @@ import logging
 
 from degiro_connector.core.exceptions import DeGiroConnectionError
 import onetimepass as otp
-import requests
+import cloudscraper
 
 from degiro_connector.core.constants import urls
 from degiro_connector.core.abstracts.abstract_action import AbstractAction
@@ -15,7 +15,7 @@ class ActionConnect(AbstractAction):
     def get_session_id(
         cls,
         credentials: Credentials,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> str:
         """Establish a connection with Degiro's Trading API.
@@ -33,7 +33,7 @@ class ActionConnect(AbstractAction):
                 credentials.totp_secret is optional.
                     Secret code for Two-factor Authentication (2FA).
                     It is optional.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 If you one wants to reuse existing "Session" object.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -75,7 +75,7 @@ class ActionConnect(AbstractAction):
             exclude_none=True,
             mode="json",
         )
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             method="POST",
             url=url,
             json=payload,
@@ -91,9 +91,9 @@ class ActionConnect(AbstractAction):
                 login_sucess = LoginSuccess.model_validate_json(json_data=response.text)
             else:
                 login_error = LoginError.model_validate_json(json_data=response.text)
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
         except Exception as e:
             logger.fatal(e)

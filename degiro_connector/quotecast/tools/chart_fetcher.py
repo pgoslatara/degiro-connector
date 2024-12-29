@@ -4,7 +4,7 @@ from typing import Any
 
 import json
 import polars as pl
-import requests
+import cloudscraper
 from isodate import parse_duration
 
 from degiro_connector.core.constants import urls
@@ -113,7 +113,7 @@ class ChartFetcher:
         return logging.getLogger(__name__)
 
     @staticmethod
-    def build_session(headers: dict[str, str] | None = None) -> requests.Session:
+    def build_session(headers: dict[str, str] | None = None) -> cloudscraper.Session:
         return ModelSession.build_session(headers=headers)
 
     @property
@@ -153,7 +153,7 @@ class ChartFetcher:
         chart_request: ChartRequest,
         logger: logging.Logger | None = None,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
     ) -> Chart | None:
         """Fetches chart's data.
         Args:
@@ -188,7 +188,7 @@ class ChartFetcher:
             raw (bool, optional):
                 Whether are not we want the raw API response.
                 Defaults to False.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -213,7 +213,7 @@ class ChartFetcher:
             user_token=user_token,
         )
 
-        http_request = requests.Request(method="GET", url=url, params=params)
+        http_request = cloudscraper.requests.Request(method="GET", url=url, params=params)
         prepped = session.prepare_request(http_request)
 
         try:
@@ -229,9 +229,9 @@ class ChartFetcher:
                 chart = Chart.model_validate(obj=response_map)
 
             return chart
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

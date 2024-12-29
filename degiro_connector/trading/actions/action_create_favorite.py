@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 
 from degiro_connector.core.constants import urls
 from degiro_connector.core.abstracts.abstract_action import AbstractAction
@@ -15,7 +15,7 @@ class ActionCreateFavorite(AbstractAction):
         name: str,
         session_id: str,
         credentials: Credentials,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> int | None:
         """Create a favorite list.
@@ -29,7 +29,7 @@ class ActionCreateFavorite(AbstractAction):
             raw (bool, optional):
                 Whether are not we want the raw API response.
                 Defaults to False.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -58,7 +58,7 @@ class ActionCreateFavorite(AbstractAction):
             mode="json",
         )
 
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             method="POST",
             url=url,
             params=params,
@@ -71,9 +71,9 @@ class ActionCreateFavorite(AbstractAction):
             response = session.send(prepped)
             response.raise_for_status()
             favorite_id = FavoriteId.model_validate_json(json_data=response.text).data
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

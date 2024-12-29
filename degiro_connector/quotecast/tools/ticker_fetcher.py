@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants.urls import (
@@ -33,8 +33,8 @@ class TickerFetcher:
     def build_session(
         headers: dict | None = None,
         hooks: dict | None = None,
-    ) -> requests.Session:
-        """Setup a "requests.Session" object.
+    ) -> cloudscraper.Session:
+        """Setup a "cloudscraper.Session" object.
         Args:
             headers (dict, optional):
                 Headers to used for the Session.
@@ -44,11 +44,11 @@ class TickerFetcher:
                 Defaults to None.
 
         Returns:
-            requests.Session:
+            cloudscraper.Session:
                 Session object with the right headers and hooks.
         """
 
-        session = requests.Session()
+        session = cloudscraper.Session()
 
         if isinstance(headers, dict):
             session.headers.update(headers)
@@ -65,13 +65,13 @@ class TickerFetcher:
         cls,
         user_token: int,
         logger: logging.Logger | None = None,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
     ) -> str | None:
         """Retrieves the "session_id" necessary to access the data-stream.
         Args:
             user_token (int):
                 User identifier in Degiro's API.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -91,7 +91,7 @@ class TickerFetcher:
         version = QUOTECAST_VERSION
         parameters = {"version": version, "userToken": user_token}
         data = '{"referrer":"https://trader.degiro.nl"}'
-        request = requests.Request(method="POST", url=url, data=data, params=parameters)
+        request = cloudscraper.requests.Request(method="POST", url=url, data=data, params=parameters)
         prepped = session.prepare_request(request=request)
 
         try:
@@ -112,14 +112,14 @@ class TickerFetcher:
     def fetch_ticker(
         cls,
         session_id: str,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> Ticker | None:
         """Fetches data from the feed.
         Args:
             session_id (str):
                 API's session id.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -141,7 +141,7 @@ class TickerFetcher:
             session = cls.build_session()
 
         url = f"{QUOTECAST}/{session_id}"
-        request = requests.Request(method="GET", url=url)
+        request = cloudscraper.requests.Request(method="GET", url=url)
         prepped = session.prepare_request(request=request)
         start_ns = time.perf_counter_ns()
 
@@ -160,9 +160,9 @@ class TickerFetcher:
                 response_datetime=datetime.now(),
                 request_duration=timedelta(microseconds=duration_ns // 1000),
             )
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:
@@ -200,7 +200,7 @@ class TickerFetcher:
         cls,
         ticker_request: TickerRequest,
         session_id: str,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> bool | None:
         """Adds/removes metric from the data-stream.
@@ -218,7 +218,7 @@ class TickerFetcher:
                     )
             session_id (str):
                 API's session id.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -243,7 +243,7 @@ class TickerFetcher:
 
         logger.info("subscribe:data %s", data[:100])
 
-        session_request = requests.Request(method="POST", url=url, data=data)
+        session_request = cloudscraper.requests.Request(method="POST", url=url, data=data)
         prepped = session.prepare_request(request=session_request)
         response = None
 
@@ -255,9 +255,9 @@ class TickerFetcher:
                 raise BrokenPipeError('A new "session_id" is required.')
 
             return True
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

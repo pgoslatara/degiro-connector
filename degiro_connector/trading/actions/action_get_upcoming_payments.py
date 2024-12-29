@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -12,7 +12,7 @@ from degiro_connector.core.abstracts.abstract_action import AbstractAction
 class ActionGetUpcomingPayments(AbstractAction):
 
     @staticmethod
-    def build_model(response: requests.Response) -> UpcomingPayments:
+    def build_model(response) -> UpcomingPayments:
         model = UpcomingPayments.model_validate_json(json_data=response.text)
 
         return model
@@ -30,7 +30,7 @@ class ActionGetUpcomingPayments(AbstractAction):
         credentials: Credentials,
         logger: logging.Logger | None = None,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
     ) -> UpcomingPayments | dict | None:
         if logger is None:
             logger = cls.build_logger()
@@ -43,7 +43,7 @@ class ActionGetUpcomingPayments(AbstractAction):
         params_map = cls.build_params_map()
         params_map.update({"intAccount": int_account, "sessionId": session_id})
 
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             method="GET",
             params=params_map,
             url=url,
@@ -59,9 +59,9 @@ class ActionGetUpcomingPayments(AbstractAction):
             else:
                 model = cls.build_model(response=response)
             return model
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

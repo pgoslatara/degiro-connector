@@ -2,7 +2,7 @@ import logging
 import time
 from datetime import datetime, timedelta
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -38,7 +38,7 @@ class ActionConfirmOrder(AbstractAction):
 
     @staticmethod
     def build_model(
-        response: requests.Response,
+        response,
         duration_ns: int,
     ) -> ConfirmationResponse:
         model = ConfirmationWrapper.model_validate_json(json_data=response.text).data
@@ -56,7 +56,7 @@ class ActionConfirmOrder(AbstractAction):
         session_id: str,
         logger: logging.Logger | None = None,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
     ) -> ConfirmationResponse | dict | None:
         if logger is None:
             logger = cls.build_logger()
@@ -68,7 +68,7 @@ class ActionConfirmOrder(AbstractAction):
         url = f"{url}/{confirmation_id};jsessionid={session_id}"
         params = {"intAccount": int_account, "sessionId": session_id}
         json_map = cls.build_json_map(order=order)
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             method="POST",
             url=url,
             json=json_map,
@@ -90,9 +90,9 @@ class ActionConfirmOrder(AbstractAction):
                     duration_ns=duration_ns,
                 )
             return model
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             if raw is True:
                 model = loads(response.text)

@@ -1,7 +1,7 @@
 import logging
 
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -16,7 +16,7 @@ from degiro_connector.trading.models.news import (
 
 class ActionGetLatestNews(AbstractAction):
     @staticmethod
-    def build_model(response: requests.Response) -> LatestNews:
+    def build_model(response) -> LatestNews:
         model = LatestWrapper.model_validate_json(json_data=response.text).data
 
         return model
@@ -40,7 +40,7 @@ class ActionGetLatestNews(AbstractAction):
         session_id: str,
         credentials: Credentials,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> LatestNews | dict | None:
         if logger is None:
@@ -54,7 +54,7 @@ class ActionGetLatestNews(AbstractAction):
         params_map = cls.build_params_map(latest_request=latest_request)
         params_map.update({"intAccount": int_account, "sessionId": session_id})
 
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             method="GET",
             params=params_map,
             url=url,
@@ -71,9 +71,9 @@ class ActionGetLatestNews(AbstractAction):
             else:
                 model = cls.build_model(response=response)
             return model
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

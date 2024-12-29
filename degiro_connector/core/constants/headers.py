@@ -1,9 +1,9 @@
 HEADERS = {
     "Accept": "application/json, text/plain, */*",
-    # Requests library doesn't support "br" (brotli algorithm)
+    # cloudscraper library doesn't support "br" (brotli algorithm)
     "Accept-Encoding": "gzip, deflate",
     "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-    # The length is setup automatically by the Requests library
+    # The length is setup automatically by the cloudscraper library
     # "Content-Length": "39",
     "Content-Type": "application/json;charset=UTF-8",
     "Origin": "https://trader.degiro.nl",

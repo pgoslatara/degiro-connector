@@ -1,5 +1,5 @@
 import logging
-import requests
+import cloudscraper
 import time
 from threading import Event
 
@@ -57,7 +57,7 @@ class ModelConnection:
 
     @synchronized
     def response_hook(self, response, *args, **kwargs):
-        """This hook will intercept all the "requests.Response"."""
+        """This hook will intercept all the "cloudscraper.Response"."""
 
         timestamp = time.monotonic()
         status_code = response.status_code
@@ -68,5 +68,5 @@ class ModelConnection:
     def build_hooks(self):
         return {"response": [self.response_hook]}
 
-    def setup_hooks(self, session: requests.Session):
+    def setup_hooks(self, session: cloudscraper.Session):
         session.hooks.update(self.build_hooks())

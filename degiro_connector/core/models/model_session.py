@@ -1,20 +1,20 @@
 import logging
 import threading
 
-import requests
+import cloudscraper
 
 import degiro_connector.core.constants.headers as default_headers
 
 
 class ModelSession:
-    """Handle the Requests Session objects in a threadsafe manner."""
+    """Handle the cloudscraper Session objects in a threadsafe manner."""
 
     @staticmethod
     def build_session(
         headers: dict | None = None,
         hooks: dict | None = None,
-    ) -> requests.Session:
-        """Setup a "requests.Session" object.
+    ) -> cloudscraper.Session:
+        """Setup a "cloudscraper.Session" object.
         Args:
             headers (dict, optional):
                 Headers to used for the Session.
@@ -24,11 +24,11 @@ class ModelSession:
                 Defaults to None.
 
         Returns:
-            requests.Session:
+            cloudscraper.Session:
                 Session object with the right headers and hooks.
         """
 
-        session = requests.Session()
+        session = cloudscraper.Session()
 
         if isinstance(headers, dict):
             session.headers.update(headers)
@@ -41,7 +41,7 @@ class ModelSession:
         return session
 
     @property
-    def session(self) -> requests.Session:
+    def session(self) -> cloudscraper.Session:
         self.__logger.debug("session:getter: %s", threading.current_thread().name)
 
         if not hasattr(self.__local_storage, "session"):
@@ -53,7 +53,7 @@ class ModelSession:
         return self.__local_storage.session
 
     @session.setter
-    def session(self, session: requests.Session):
+    def session(self, session: cloudscraper.Session):
         self.__logger.debug("session:setter: %s", threading.current_thread().name)
 
         self.__local_storage.session = session

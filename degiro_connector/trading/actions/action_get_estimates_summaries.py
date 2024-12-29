@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -11,7 +11,7 @@ from degiro_connector.trading.models.product import EstimatesSummaries, Summarie
 
 class ActionGetEstimatesSummaries(AbstractAction):
     @staticmethod
-    def build_model(response: requests.Response) -> EstimatesSummaries:
+    def build_model(response) -> EstimatesSummaries:
         model = SummariesWrapper.model_validate_json(json_data=response.text).data
 
         return model
@@ -23,7 +23,7 @@ class ActionGetEstimatesSummaries(AbstractAction):
         session_id: str,
         credentials: Credentials,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> EstimatesSummaries | dict | None:
         if logger is None:
@@ -35,7 +35,7 @@ class ActionGetEstimatesSummaries(AbstractAction):
         url = f"{urls.ESTIMATES_SUMMARIES}/{product_isin}"
         params_map = {"intAccount": int_account, "sessionId": session_id}
 
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             method="GET",
             params=params_map,
             url=url,
@@ -52,9 +52,9 @@ class ActionGetEstimatesSummaries(AbstractAction):
             else:
                 model = cls.build_model(response=response)
             return model
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

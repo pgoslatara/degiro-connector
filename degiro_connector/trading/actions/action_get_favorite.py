@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -16,7 +16,7 @@ class ActionGetFavorite(AbstractAction):
         session_id: str,
         credentials: Credentials,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> FavoriteBatch | None:
         """Move a favorite list.
@@ -28,7 +28,7 @@ class ActionGetFavorite(AbstractAction):
             raw (bool, optional):
                 Whether are not we want the raw API response.
                 Defaults to False.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -52,7 +52,7 @@ class ActionGetFavorite(AbstractAction):
 
         params["sessionId"] = session_id
 
-        http_request = requests.Request(method="GET", url=url, params=params)
+        http_request = cloudscraper.requests.Request(method="GET", url=url, params=params)
         prepped = session.prepare_request(http_request)
 
         try:
@@ -67,9 +67,9 @@ class ActionGetFavorite(AbstractAction):
                 )
 
             return favorite_batch
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

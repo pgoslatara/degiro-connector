@@ -1,6 +1,6 @@
 import abc
 import logging
-import requests
+import cloudscraper
 from inspect import ismethod
 
 
@@ -17,7 +17,7 @@ class AbstractAction(abc.ABC):
 
     # @final
     @staticmethod
-    def build_session(headers: dict[str, str] | None = None) -> requests.Session:
+    def build_session(headers: dict[str, str] | None = None) -> cloudscraper.Session:
         return ModelSession.build_session()
 
     # @final

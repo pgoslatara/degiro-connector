@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 
 from degiro_connector.core.constants import urls
 from degiro_connector.core.abstracts.abstract_action import AbstractAction
@@ -11,7 +11,7 @@ class ActionGetConfig(AbstractAction):
     def get_config(
         cls,
         session_id: str,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> dict | None:
         if logger is None:
@@ -21,7 +21,7 @@ class ActionGetConfig(AbstractAction):
 
         url = urls.CONFIG
 
-        request = requests.Request(method="GET", url=url)
+        request = cloudscraper.requests.Request(method="GET", url=url)
         prepped = session.prepare_request(request)
         prepped.headers["cookie"] = "JSESSIONID=" + session_id
         response_raw = None
@@ -30,9 +30,9 @@ class ActionGetConfig(AbstractAction):
             response_raw = session.send(prepped)
             response_raw.raise_for_status()
             response_dict = response_raw.json()
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             status_code = getattr(response_raw, "status_code", "No status_code found.")
             text = getattr(response_raw, "text", "No text found.")

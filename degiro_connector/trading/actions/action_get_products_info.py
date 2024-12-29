@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -11,7 +11,7 @@ from degiro_connector.trading.models.product import ProductInfo
 
 class ActionGetProductsInfo(AbstractAction):
     @staticmethod
-    def build_model(response: requests.Response) -> ProductInfo:
+    def build_model(response) -> ProductInfo:
         model = ProductInfo.model_validate_json(json_data=response.text)
 
         return model
@@ -23,7 +23,7 @@ class ActionGetProductsInfo(AbstractAction):
         session_id: str,
         credentials: Credentials,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> ProductInfo | dict | None:
         """Retrieve information about the account.
@@ -42,7 +42,7 @@ class ActionGetProductsInfo(AbstractAction):
             raw (bool, optional):
                 Whether are not we want the raw API response.
                 Defaults to False.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -61,7 +61,7 @@ class ActionGetProductsInfo(AbstractAction):
         url = urls.PRODUCTS_INFO
         params_map = {"intAccount": int_account, "sessionId": session_id}
 
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             json=product_list,
             method="POST",
             params=params_map,
@@ -78,9 +78,9 @@ class ActionGetProductsInfo(AbstractAction):
             else:
                 model = cls.build_model(response=response)
             return model
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

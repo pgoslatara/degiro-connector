@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 
 from degiro_connector.core.constants import urls
 from degiro_connector.core.abstracts.abstract_action import AbstractAction
@@ -15,7 +15,7 @@ class ActionPutFavoriteProduct(AbstractAction):
         product_id: int,
         session_id: str,
         credentials: Credentials,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> bool | None:
         """Put a product into a favorite list.
@@ -31,7 +31,7 @@ class ActionPutFavoriteProduct(AbstractAction):
             raw (bool, optional):
                 Whether are not we want the raw API response.
                 Defaults to False.
-            session (requests.Session, optional):
+            session (cloudscraper.Session, optional):
                 This object will be generated if None.
                 Defaults to None.
             logger (logging.Logger, optional):
@@ -54,16 +54,16 @@ class ActionPutFavoriteProduct(AbstractAction):
             "sessionId": session_id,
         }
 
-        request = requests.Request(method="PUT", url=url, params=params)
+        request = cloudscraper.requests.Request(method="PUT", url=url, params=params)
         prepped = session.prepare_request(request)
         response_raw = None
 
         try:
             response_raw = session.send(prepped)
             response_raw.raise_for_status()
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

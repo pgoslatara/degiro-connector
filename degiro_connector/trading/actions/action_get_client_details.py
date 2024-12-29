@@ -1,7 +1,7 @@
 import logging
 
 
-import requests
+import cloudscraper
 
 from degiro_connector.core.constants import urls
 from degiro_connector.core.abstracts.abstract_action import AbstractAction
@@ -12,7 +12,7 @@ class ActionGetClientDetails(AbstractAction):
     def get_client_details(
         cls,
         session_id: str,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> dict | None:
         if logger is None:
@@ -26,7 +26,7 @@ class ActionGetClientDetails(AbstractAction):
             "sessionId": session_id,
         }
 
-        request = requests.Request(method="GET", url=url, params=params)
+        request = cloudscraper.requests.Request(method="GET", url=url, params=params)
         prepped = session.prepare_request(request)
         response_raw = None
 
@@ -34,7 +34,7 @@ class ActionGetClientDetails(AbstractAction):
             response_raw = session.send(prepped)
             response_raw.raise_for_status()
             response_dict = response_raw.json()
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             status_code = getattr(response_raw, "status_code", "No status_code found.")
             text = getattr(response_raw, "text", "No text found.")
             logger.fatal(status_code)

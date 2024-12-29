@@ -1,6 +1,6 @@
 import logging
 
-import requests
+import cloudscraper
 
 from degiro_connector.core.constants import urls
 from degiro_connector.core.abstracts.abstract_action import AbstractAction
@@ -37,7 +37,7 @@ class ActionUpdateOrder(AbstractAction):
         order: Order,
         session_id: str,
         credentials: Credentials,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
         logger: logging.Logger | None = None,
     ) -> bool | None:
         if logger is None:
@@ -51,7 +51,7 @@ class ActionUpdateOrder(AbstractAction):
         url = f"{url}/{order_id};jsessionid={session_id}"
         params = {"intAccount": int_account, "sessionId": session_id}
         json_map = cls.build_json_map(order=order)
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             method="PUT",
             url=url,
             json=json_map,
@@ -65,9 +65,9 @@ class ActionUpdateOrder(AbstractAction):
             response_raw.raise_for_status()
 
             return response_raw.status_code == 200
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             return None
         except Exception as e:

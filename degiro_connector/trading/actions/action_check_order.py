@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 from typing import Any
 
-import requests
+import cloudscraper
 from orjson import loads
 
 from degiro_connector.core.constants import urls
@@ -39,7 +39,7 @@ class ActionCheckOrder(AbstractAction):
 
     @staticmethod
     def build_model(
-        response: requests.Response,
+        response,
         duration_ns: int,
     ) -> CheckingResponse:
         model = CheckingWrapper.model_validate_json(
@@ -58,7 +58,7 @@ class ActionCheckOrder(AbstractAction):
         session_id: str,
         logger: logging.Logger | None = None,
         raw: bool = False,
-        session: requests.Session | None = None,
+        session: cloudscraper.Session | None = None,
     ) -> CheckingResponse | Any | None:
         if logger is None:
             logger = cls.build_logger()
@@ -70,7 +70,7 @@ class ActionCheckOrder(AbstractAction):
         url = f"{url};jsessionid={session_id}"
         params = {"intAccount": int_account, "sessionId": session_id}
         json_map = cls.build_json_map(order=order)
-        request = requests.Request(
+        request = cloudscraper.requests.Request(
             method="POST",
             url=url,
             json=json_map,
@@ -92,9 +92,9 @@ class ActionCheckOrder(AbstractAction):
                     duration_ns=duration_ns,
                 )
             return model
-        except requests.HTTPError as e:
+        except cloudscraper.HTTPError as e:
             logger.fatal(e)
-            if isinstance(e.response, requests.Response):
+            if isinstance(e.response, cloudscraper.Response):
                 logger.fatal(e.response.text)
             if raw is True:
                 model = loads(response.text)
