@@ -28,7 +28,7 @@ class ModelSession:
                 Session object with the right headers and hooks.
         """
 
-        session = cloudscraper.Session()
+        session = cloudscraper.create_scraper()
 
         if isinstance(headers, dict):
             session.headers.update(headers)
