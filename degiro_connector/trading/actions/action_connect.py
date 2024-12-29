@@ -90,6 +90,7 @@ class ActionConnect(AbstractAction):
             if response.status_code == 200:
                 login_sucess = LoginSuccess.model_validate_json(json_data=response.text)
             else:
+                logging.warning(f"{response.text=}")
                 login_error = LoginError.model_validate_json(json_data=response.text)
         except requests.HTTPError as e:
             logger.fatal(e)
